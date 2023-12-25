@@ -1,5 +1,3 @@
-import mongoose from "mongoose";
-import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import express from "express";
@@ -12,10 +10,19 @@ app.use(cors({
   })
 );
 
+//all middleware used here
 app.use(express.json({ limit: "16kb", }));
 app.use(express.urlencoded({limit: "16kb", }));
 app.use(express.static('public'));
 app.use(cookieParser())
 
+//import routes middlwware
+import router from './routes/user.route.js'
 
-export {main}
+//declared routes
+app.use('/api/v1/users',router)
+
+
+
+
+export default app

@@ -1,22 +1,20 @@
-import dotenv from 'dotenv'
-import {dbconnect} from './db/dbconnect.js'
-import  express from 'express';
+import dotenv from "dotenv";
+import { dbconnect } from "./db/dbconnect.js";
+import app from './app.js'
 
 dotenv.config({
-    path:'../.env'
-})
+  path: "../.env",
+});
 
-const app=express();
-const port=process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-app.get('/',(req,res)=>{
-    res.send('Hello express backend is working');
-    console.log(port)
-})
-
-app.listen(process.env.PORT,()=>{
-    console.log('app is listening  on port :', `localhost:${process.env.PORT}`)
-})
-
-
-dbconnect();
+//database connection
+dbconnect()
+  .then(() => {
+    app.listen(port, () => {
+        console.log("app running")
+    });
+  })
+  .catch((error)=>{
+    console.log('app crash due to Err',error.message)
+  });
