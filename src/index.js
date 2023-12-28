@@ -12,7 +12,7 @@ const port = process.env.PORT || 3000;
 dbconnect()
   .then(() => {
     app.listen(port, () => {
-        console.log("app running")
+        console.log("app running",port)
     });
   })
   .catch((error)=>{
