@@ -14,13 +14,12 @@ const uploadOnCloudinary = async (filePath) => {
       //method forr uploading file on cloudinary
       resource_type: "auto",
     });
-    console.log(response.url);
+    // fs.unlinkSync(filePath);
     return response;
   } catch (error) {
     fs.unlinkSync(filePath);
-    console.log(error); //if the file upload failed it will delete the file from temp
+    console.log("Error in cloudinary",error.message); //if the file upload failed it will delete the file from temp
   }
-  console.log("ulpoad method works");
 };
 
 export { uploadOnCloudinary };
