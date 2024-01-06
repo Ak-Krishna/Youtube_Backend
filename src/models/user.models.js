@@ -63,12 +63,13 @@ userSchema.pre("save",async function (next) {
 
 //methods are used for crosscheck the given data is valid
 userSchema.methods.isPasswordCorrect = async function (password) {
+  console.log(password,this.password)
   return await bcrypt.compare(password, this.password);
 };
 
 //method for generating access token
 userSchema.methods.generateAccessToken = function () {
-  jwt.sign(
+  return jwt.sign(
     {
       _id: this._id,
       email: this.email,
@@ -77,20 +78,20 @@ userSchema.methods.generateAccessToken = function () {
     },
     process.env.ACCESS_TOKEN_SECRETE,
     {
-      expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
+      expiresIn: process.env.ACCESS_TOKEN_EXPIRY
     }
-  );
+  )
 };
 
 //method for generate refresh token
 userSchema.methods.generateRefreshToken = function () {
-  jwt.sign(
+  return jwt.sign(
     {
       _id: this._id,
     },
-    process.env.ACCESS_REFRESH_SECRETE,
+    process.env.REFRESH_TOKEN_SECRETE,
     {
-      expiresIn: process.env.ACCESS_REFRESH_EXPIRY,
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY,
     }
   );
 };

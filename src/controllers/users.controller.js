@@ -4,9 +4,29 @@ import { ApiError } from "../utils/ApiError.js";
 import { uploadOnCloudinary } from "../utils/coudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 
+//generate access and refresh token
+const generateAccessAndRefreshToken = async (UserId) => {
+  try {
+    console.log("i am in try")
+    const user = await User.findById(UserId);
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+    user.refreshToken = refreshToken;
+    await user.save({ validBeforeSave: false })
+
+    return { accessToken, refreshToken };
+
+  } catch (error) {
+    throw new ApiError(
+      503,
+      "something wents wrong while generating refresh and access token"
+    );
+  }
+};
+
 const registerUser = asyncHandler(async (req, res) => {
   const { fullName, email, username, password } = await req.body;
-  console.log("user data get successfully",email)
+  // console.log("user data get successfully", email);
 
   //user validation
   if ([fullName, email, username].some((field) => field?.trim() === "")) {
@@ -21,7 +41,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (existingUser) {
     throw new ApiError("403", "User with email or username is already exist");
   }
-  console.log("checked for existing user")
+  console.log("checked for existing user");
 
   //avatar image
   const avatarLocalPath = req.files?.avatar[0]?.path;
@@ -29,14 +49,13 @@ const registerUser = asyncHandler(async (req, res) => {
   if (!avatarLocalPath) {
     throw new ApiError(403, "Avatar image is required");
   }
-  console.log("avatar imager get :",avatarLocalPath);
-
+  console.log("avatar imager get :", avatarLocalPath);
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
   const coverImage = await uploadOnCloudinary(coverImageLocalPath);
 
-  console.log("avatar url get :",avatar?.url)
-  console.log("cover image url :",coverImage?.url)
+  console.log("avatar url get :", avatar?.url);
+  console.log("cover image url :", coverImage?.url);
 
   if (!avatar) {
     throw new ApiError(404, "avatar image is required");
@@ -48,7 +67,7 @@ const registerUser = asyncHandler(async (req, res) => {
     password,
     email,
     fullName,
-    avatar:avatar?.url,
+    avatar: avatar?.url,
     coverImage: coverImage?.url,
   });
 
@@ -56,20 +75,46 @@ const registerUser = asyncHandler(async (req, res) => {
     "-password -refreshToken"
   );
 
-if(!createdUser){
-    throw new ApiError(503,"something wents wrong while registering user")
-}
+  if (!createdUser) {
+    throw new ApiError(503, "something wents wrong while registering user");
+  }
 
-return res.status(200).json(
-     new ApiResponse(200,createdUser,"User created successfully"),
-)  
-
-
+  return res
+    .status(200)
+    .json(new ApiResponse(200, createdUser, "User created successfully"));
 });
 
 //controller to login the user
 const loginUser=asyncHandler(async(req,res)=>{
-  
-})
+  const {username,email,password}=await req.body;
+  console.log(email)
 
-export { registerUser };
+  if(!email && !username){
+    throw new ApiError(402,"email or username is required")
+  }
+
+  console.log("user data fetch")
+  //check user is exist or not
+  const user=await User.findOne({
+    $or:[{username},{email}]
+  })
+  if(!user){
+    throw new ApiError(402,"user with this email or username does not exist")
+  }
+console.log("user data fetch from database")
+  //check for password is correct or not
+  const validatePassword=await user.isPasswordCorrect(password);
+  console.log(validatePassword)
+  if(!validatePassword){
+    throw new ApiError(402,"invalid user credentials")
+  }
+  // console.log("validate user password",validatePassword)
+  console.log(user._id)
+  const {accessToken,refreshToken}=await generateAccessAndRefreshToken(user?._id);
+  console.log(accessToken,refreshToken)
+
+  const loggedInUser=await User.findById(user._id);
+  
+
+})
+export { registerUser, loginUser };
