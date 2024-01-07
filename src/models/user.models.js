@@ -69,6 +69,8 @@ userSchema.methods.isPasswordCorrect = async function (password) {
 
 //method for generating access token
 userSchema.methods.generateAccessToken = function () {
+  console.log(process.env.ACCESS_TOKEN_SECRET);
+  console.log("i am in generate acccess token method")
   return jwt.sign(
     {
       _id: this._id,
@@ -76,7 +78,7 @@ userSchema.methods.generateAccessToken = function () {
       username: this.userName,
       fullName: this.fullName,
     },
-    process.env.ACCESS_TOKEN_SECRETE,
+    process.env.ACCESS_TOKEN_SECRET,
     {
       expiresIn: process.env.ACCESS_TOKEN_EXPIRY
     }
@@ -85,6 +87,7 @@ userSchema.methods.generateAccessToken = function () {
 
 //method for generate refresh token
 userSchema.methods.generateRefreshToken = function () {
+  console.log("i am in generate refresh token method")
   return jwt.sign(
     {
       _id: this._id,

@@ -111,9 +111,21 @@ console.log("user data fetch from database")
   // console.log("validate user password",validatePassword)
   console.log(user._id)
   const {accessToken,refreshToken}=await generateAccessAndRefreshToken(user?._id);
-  console.log(accessToken,refreshToken)
 
-  const loggedInUser=await User.findById(user._id);
+  const loggedInUser=await User.findById(user._id).select("-password -refreshToken");
+  const optios={
+    httpOnly:true,
+    secure:true
+  }
+
+  return res.status(200)
+    .cookie("Access Token",accessToken,optios)
+    .cookie("Refresh Token",refreshToken,optios)
+    .json(new ApiResponse(
+      200,
+      {user:loggedInUser},
+      "User LoggedIn successfully"
+    ));
   
 
 })
